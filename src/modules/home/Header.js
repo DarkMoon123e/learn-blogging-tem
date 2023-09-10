@@ -4,6 +4,7 @@ import { useAuth } from "contexts/auth-context";
 
 const Header = () => {
   const { userInfo } = useAuth();
+  console.log("file: Header.js:7 ~ Header ~ userInfo:", userInfo);
   const userLastName = userInfo?.displayName?.split(" ").slice(-1)[0];
 
   return (

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { db } from "../firebase/firebase-config";
+import { auth, db } from "../firebase/firebase-config";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import FormField2Row from "components/form/formField2Row";
@@ -16,6 +16,7 @@ import RadioGroup from "components/form/RadioGroup";
 import ManageTitle from "modules/manage/ManageTitle";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { doc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
+import { updateProfile } from "firebase/auth";
 
 const schema = yup
   .object({
@@ -71,6 +72,10 @@ const UpdateUser = () => {
         status: Number(values.status),
         createdAt: serverTimestamp(),
       });
+      await updateProfile(auth.currentUser, {
+        displayName: values.fullName,
+        photoURL: values.img,
+      });
       reset({
         email: "",
         img: "",
@@ -97,7 +102,7 @@ const UpdateUser = () => {
       setImage(singleDoc.data()?.img);
     }
     fetchData();
-  }, [image, reset, setValue, userId]);
+  }, []);
 
   useEffect(() => {
     const errorMessage = Object.values(errors);

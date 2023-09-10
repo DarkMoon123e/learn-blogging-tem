@@ -48,6 +48,7 @@ const SignUpPage = () => {
       });
       await updateProfile(auth.currentUser, {
         displayName: values.fullName,
+        photoURL: defaultImg,
       });
       toast.success("created user successfully");
       navigate("/");
