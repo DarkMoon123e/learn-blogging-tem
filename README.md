@@ -1,3 +1,45 @@
-23/08/2023: lots of things to remember
+customize
+signup
+singin
+customize log in
+s
+add category, post, user
+edit
+search table
 
-307 308: delete img in postAddNew
+- Để sau
+  Role: SignIn
+  admin: all
+  moderator
+  user:
+
+all blog
+
+user:
+
+- email
+- fullName
+- img
+- password
+- role
+- status
+- createdAt
+
+category
+
+- name
+- img
+- status
+- createdAt
+
+post
+
+- author: depends on user
+- title: \*
+- img: \*
+- category {}: name \*
+- hot: \*
+- status: \*
+- decs: \*
+- userId
+- createdAt

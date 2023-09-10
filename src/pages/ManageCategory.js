@@ -1,12 +1,19 @@
 import Button from "components/Button";
 import ActionDelete from "components/TableActions/ActionDelete";
 import ActionEdit from "components/TableActions/ActionEdit";
-import ActionView from "components/TableActions/ActionView";
+import useChangeTime from "hooks/useChangeTime";
+import useDeleteDoc from "hooks/useDeleteDoc";
+import useFetchDoc from "hooks/useFetchDoc";
+import ActionGroupTable from "modules/manage/ActionGroupTable";
 import ManageTitle from "modules/manage/ManageTitle";
 import Table from "modules/manage/Table";
 import React from "react";
+import { useNavigate } from "react-router-dom";
+import { categoryStatusArr } from "utils/constants";
 
 const ManageCategory = () => {
+  const { list: categoryList } = useFetchDoc("categories");
+
   return (
     <div>
       <div>
@@ -23,41 +30,53 @@ const ManageCategory = () => {
             <tr>
               <th>Id</th>
               <th>Name</th>
-              <th>SLug</th>
+              <th>Created</th>
               <th>Status</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <th>561651615esdfs</th>
-              <th>
-                {/* <div className="flex items-center gap-x-3">
-                  <img
-                    src={defaultImg}
-                    alt=""
-                    className="object-cover w-10 h-10 rounded-lg"
-                  />
-                  <div className="text-start">
-                    <p>How to create a new account</p>
-                    <p className="italic font-light">Date: 4/9/2023</p>
-                  </div>
-                </div> */}
-              </th>
-              <th></th>
-              <th></th>
-              <th>
-                <div className="flex items-center gap-x-3">
-                  <ActionView></ActionView>
-                  <ActionEdit></ActionEdit>
-                  <ActionDelete></ActionDelete>
-                </div>
-              </th>
-            </tr>
+            {categoryList?.length > 0 &&
+              categoryList.map((item) => (
+                <CategoryItemTable data={item}></CategoryItemTable>
+              ))}
           </tbody>
         </Table>
       </div>
     </div>
+  );
+};
+
+const CategoryItemTable = ({ data }) => {
+  const navigate = useNavigate();
+  const { day, month, year } = useChangeTime(data.createdAt);
+  const { handleDeleteDoc } = useDeleteDoc("categories", data.id);
+  return (
+    <tr>
+      <th title={data?.id}>{data?.id.slice(0, 5) + "..."}</th>
+      <th>
+        <div className="flex items-center gap-x-3">
+          <img
+            src={data.img}
+            alt=""
+            className="object-cover w-8 h-8 rounded-full"
+          />
+          {data.name}
+        </div>
+      </th>
+      <th>{`${day} / ${month} / ${year}`}</th>
+      <th>{categoryStatusArr[data.status - 1]}</th>
+      <th>
+        <ActionGroupTable>
+          <ActionEdit
+            onClick={() =>
+              navigate(`/manage/update-category?categoryId=${data.id}`)
+            }
+          ></ActionEdit>
+          <ActionDelete onClick={handleDeleteDoc}></ActionDelete>
+        </ActionGroupTable>
+      </th>
+    </tr>
   );
 };
 

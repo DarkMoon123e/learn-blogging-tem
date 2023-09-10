@@ -5,7 +5,7 @@ import reportWebVitals from "./reportWebVitals";
 import "react-toastify/dist/ReactToastify.css";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 const container = document.getElementById("root");
 const root = createRoot(container);

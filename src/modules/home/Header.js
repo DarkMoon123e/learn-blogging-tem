@@ -1,8 +1,11 @@
 import Button from "components/Button";
-import React from "react";
 import { NavLink } from "react-router-dom";
+import { useAuth } from "contexts/auth-context";
 
 const Header = () => {
+  const { userInfo } = useAuth();
+  const userLastName = userInfo?.displayName?.split(" ").slice(-1)[0];
+
   return (
     <div className="container flex items-center gap-x-5">
       <div className="max-w-[50px]">
@@ -14,7 +17,7 @@ const Header = () => {
           />
         </NavLink>
       </div>
-      <ul className="flex items-center gap-x-5">
+      {/* <ul className="flex items-center gap-x-5">
         {linkList.map((item) => (
           <NavLink
             key={item.id}
@@ -26,9 +29,18 @@ const Header = () => {
             {item.name}
           </NavLink>
         ))}
-      </ul>
+      </ul> */}
       <div className="flex justify-end flex-1"></div>
-      <Button to="/sign-in">Sign in</Button>
+      {userLastName ? (
+        <p>
+          Welcome back,{" "}
+          <NavLink to="/manage/post" className="font-semibold text-primary">
+            {userLastName}
+          </NavLink>
+        </p>
+      ) : (
+        <Button to="/sign-in">Sign in</Button>
+      )}
     </div>
   );
 };

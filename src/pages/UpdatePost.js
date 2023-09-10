@@ -1,25 +1,25 @@
-import Button from "components/Button";
-import Dropdown from "components/form/Dropdown";
 import FormField from "components/form/FormField";
-import ImageUpLoad from "components/form/ImageUpLoad";
-import Input from "components/form/Input";
-import InputToggle from "components/form/InputToggle";
 import Label from "components/form/Label";
-import Radio from "components/form/Radio";
-import RadioGroup from "components/form/RadioGroup";
 import FormField2Row from "components/form/formField2Row";
 import ManageTitle from "modules/manage/ManageTitle";
 import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { postStatus } from "utils/constants";
-import useFetchDoc from "hooks/useFetchDoc";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import { useForm } from "react-hook-form";
+import useFetchDoc from "hooks/useFetchDoc";
 import { toast } from "react-toastify";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { db } from "../firebase/firebase-config";
-import { useAuth } from "contexts/auth-context";
+import Dropdown from "components/form/Dropdown";
+import InputToggle from "components/form/InputToggle";
+import RadioGroup from "components/form/RadioGroup";
+import Radio from "components/form/Radio";
+import { postStatus } from "utils/constants";
+import ImageUpLoad from "components/form/ImageUpLoad";
 import Textarea from "components/form/Textarea";
+import Button from "components/Button";
+import Input from "components/form/Input";
+import { doc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { db } from "../firebase/firebase-config";
 import useToggleValue from "hooks/useToggleValue";
 
 const schema = yup
@@ -33,8 +33,10 @@ const schema = yup
   })
   .required();
 
-const AddPost = () => {
-  const { userInfo } = useAuth();
+const UpdatePost = () => {
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const postId = params.get("postId");
   const {
     control,
     handleSubmit,
@@ -53,25 +55,38 @@ const AddPost = () => {
       decs: "",
     },
   });
+
   const statusWatch = watch("status");
   const [image, setImage] = useState();
   const [progressUploadImg, setProgressUploadImg] = useState(0);
-  const { value, handleToggleValue } = useToggleValue(false);
+  const { value, handleToggleValue } = useToggleValue();
   const [label, setLabel] = useState("Choose category ...");
 
-  const handleAddPost = async (values) => {
-    console.log(values);
-    const colRef = collection(db, "posts");
+  useEffect(() => {
+    async function fetchData() {
+      const colRef = doc(db, "posts", postId);
+      const singleDoc = await getDoc(colRef);
+      reset(singleDoc.data());
+      setImage(singleDoc.data()?.img);
+
+      setValue("category", {
+        ...singleDoc.data().category,
+      });
+      setLabel(singleDoc.data()?.category.name);
+    }
+    fetchData();
+  }, []);
+
+  const handleUpdatePost = async (values) => {
+    const docRef = doc(db, "posts", postId);
     try {
-      await addDoc(colRef, {
-        author: userInfo.displayName,
+      await updateDoc(docRef, {
         tittle: values.tittle,
         img: values.img,
         category: values.category,
-        hot: Boolean(values.hot),
+        hot: values.hot,
         status: Number(values.status),
         decs: values.decs,
-        userId: userInfo.uid,
         createdAt: serverTimestamp(),
       });
       reset({
@@ -84,7 +99,8 @@ const AddPost = () => {
       });
       setImage("");
       setProgressUploadImg(0);
-      toast.success("Created post successfully");
+      toast.success("Updated post successfully");
+      navigate("/manage/post");
     } catch (e) {
       toast.error("Something went wrong");
       console.log(e);
@@ -101,9 +117,12 @@ const AddPost = () => {
   return (
     <div>
       <div className="flex items-center justify-between mb-10">
-        <ManageTitle title="Add post" decs="Create a new post"></ManageTitle>
+        <ManageTitle
+          title="Update post"
+          decs="Update information of post"
+        ></ManageTitle>
       </div>
-      <form onSubmit={handleSubmit(handleAddPost)}>
+      <form onSubmit={handleSubmit(handleUpdatePost)}>
         <FormField2Row>
           <FormField>
             <Label htmlFor="tittle">Tittle</Label>
@@ -189,7 +208,7 @@ const AddPost = () => {
         </FormField2Row>
         <div className="flex justify-center">
           <Button type="submit" loading={isSubmitting}>
-            Add post
+            Update post
           </Button>
         </div>
       </form>
@@ -197,4 +216,4 @@ const AddPost = () => {
   );
 };
 
-export default AddPost;
+export default UpdatePost;

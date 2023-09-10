@@ -1,7 +1,9 @@
 import Button from "components/Button";
 import React from "react";
+import { useAuth } from "contexts/auth-context";
 
 const Banner = () => {
+  const { userInfo } = useAuth();
   return (
     <div className="p-5 bg-green-400">
       <div className="container flex items-center justify-center">
@@ -16,7 +18,9 @@ const Banner = () => {
             obcaecati exercitationem voluptas, at ipsa!
           </p>
           <div>
-            <Button to="/manage">Get started</Button>
+            <Button to={userInfo ? "/manage/post" : "/sign-in"}>
+              Get started
+            </Button>
           </div>
         </div>
         <div className="w-[1000px]">

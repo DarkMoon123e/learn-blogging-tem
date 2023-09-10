@@ -1,3 +1,4 @@
+import { AuthProvider } from "contexts/auth-context";
 import ManageLayout from "layouts/ManageLayout";
 import AddCategory from "pages/AddCategory";
 import AddPost from "pages/AddPost";
@@ -8,12 +9,15 @@ import ManagePost from "pages/ManagePost";
 import ManageUser from "pages/ManageUser";
 import SignInPage from "pages/SignInPage";
 import SignUpPage from "pages/SignUpPage";
+import UpdateCategory from "pages/UpdateCategory";
+import UpdatePost from "pages/UpdatePost";
+import UpdateUser from "pages/UpdateUser";
 import React from "react";
 import { Route, Routes } from "react-router-dom";
 
 const App = () => {
   return (
-    <>
+    <AuthProvider>
       <Routes>
         <Route path="/" element={<HomePage></HomePage>}></Route>
         <Route path="/sign-in" element={<SignInPage></SignInPage>}></Route>
@@ -39,9 +43,22 @@ const App = () => {
             element={<AddCategory></AddCategory>}
           ></Route>
           <Route path="/manage/add-user" element={<AddUser></AddUser>}></Route>
+
+          <Route
+            path="/manage/update-post"
+            element={<UpdatePost></UpdatePost>}
+          ></Route>
+          <Route
+            path="/manage/update-category"
+            element={<UpdateCategory></UpdateCategory>}
+          ></Route>
+          <Route
+            path="/manage/update-user"
+            element={<UpdateUser></UpdateUser>}
+          ></Route>
         </Route>
       </Routes>
-    </>
+    </AuthProvider>
   );
 };
 

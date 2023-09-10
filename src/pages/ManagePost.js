@@ -1,13 +1,19 @@
 import Button from "components/Button";
 import ActionDelete from "components/TableActions/ActionDelete";
 import ActionEdit from "components/TableActions/ActionEdit";
-import ActionView from "components/TableActions/ActionView";
 import ManageTitle from "modules/manage/ManageTitle";
 import Table from "modules/manage/Table";
-import React from "react";
-import { defaultImg } from "utils/constants";
+import useFetchDoc from "hooks/useFetchDoc";
+import useChangeTime from "hooks/useChangeTime";
+import { postStatusArr } from "utils/constants";
+import useDeleteDoc from "hooks/useDeleteDoc";
+import ActionGroupTable from "modules/manage/ActionGroupTable";
+import { useNavigate } from "react-router-dom";
 
 const ManagePost = () => {
+  const { list: postList } = useFetchDoc("posts");
+  console.log("file: ManagePost.js:14 ~ ManagePost ~ postList:", postList);
+
   return (
     <div>
       <div className="flex items-center justify-between">
@@ -22,38 +28,55 @@ const ManagePost = () => {
             <th>Post</th>
             <th>Category</th>
             <th>Author</th>
+            <th>Status</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <th>561651615esdfs</th>
-            <th>
-              <div className="flex items-center gap-x-3">
-                <img
-                  src={defaultImg}
-                  alt=""
-                  className="object-cover w-10 h-10 rounded-lg"
-                />
-                <div className="text-start">
-                  <p>How to create a new account</p>
-                  <p className="italic font-light">Date: 4/9/2023</p>
-                </div>
-              </div>
-            </th>
-            <th>Health</th>
-            <th>Minh Dinh</th>
-            <th>
-              <div className="flex items-center gap-x-3">
-                <ActionView></ActionView>
-                <ActionEdit></ActionEdit>
-                <ActionDelete></ActionDelete>
-              </div>
-            </th>
-          </tr>
+          {postList?.length > 0 &&
+            postList.map((item) => (
+              <PostItemTable key={item.id} data={item}></PostItemTable>
+            ))}
         </tbody>
       </Table>
     </div>
+  );
+};
+
+const PostItemTable = ({ data }) => {
+  const navigate = useNavigate();
+  const { day, month, year } = useChangeTime(data.createdAt);
+  const { handleDeleteDoc } = useDeleteDoc("posts", data.id);
+  return (
+    <tr>
+      <th title={data.id}>{data.id.slice(0, 5) + "..."}</th>
+      <th>
+        <div className="flex items-center gap-x-3">
+          <img
+            src={data.img}
+            alt=""
+            className="object-cover w-10 h-10 rounded-lg"
+          />
+          <div className="text-start">
+            <p>{data.tittle}</p>
+            <p className="italic font-light">
+              Date: {`${day} / ${month} / ${year}`}
+            </p>
+          </div>
+        </div>
+      </th>
+      <th>{data.category.name}</th>
+      <th>{data.author}</th>
+      <th>{postStatusArr[data.status - 1]}</th>
+      <th>
+        <ActionGroupTable>
+          <ActionEdit
+            onClick={() => navigate(`/manage/update-post?postId=${data.id}`)}
+          ></ActionEdit>
+          <ActionDelete onClick={handleDeleteDoc}></ActionDelete>
+        </ActionGroupTable>
+      </th>
+    </tr>
   );
 };
 

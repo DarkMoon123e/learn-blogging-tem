@@ -1,21 +1,21 @@
-import Button from "components/Button";
-import FormField from "components/form/FormField";
-import ImageUpLoad from "components/form/ImageUpLoad";
-import Input from "components/form/Input";
-import Label from "components/form/Label";
-import Radio from "components/form/Radio";
-import RadioGroup from "components/form/RadioGroup";
-import FormField2Row from "components/form/formField2Row";
-import ManageTitle from "modules/manage/ManageTitle";
 import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { categoryStatus } from "utils/constants";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import ManageTitle from "modules/manage/ManageTitle";
+import FormField2Row from "components/form/formField2Row";
+import FormField from "components/form/FormField";
+import Label from "components/form/Label";
+import Input from "components/form/Input";
+import RadioGroup from "components/form/RadioGroup";
+import Radio from "components/form/Radio";
+import { categoryStatus } from "utils/constants";
+import ImageUpLoad from "components/form/ImageUpLoad";
+import Button from "components/Button";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { doc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { db } from "../firebase/firebase-config";
-import useCapitalizeString from "hooks/useCapitalizeString";
 
 const schema = yup
   .object({
@@ -25,7 +25,10 @@ const schema = yup
   })
   .required();
 
-const AddCategory = () => {
+const UpdateCategory = () => {
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const categoryId = params.get("categoryId");
   const {
     control,
     handleSubmit,
@@ -45,25 +48,20 @@ const AddCategory = () => {
   const [image, setImage] = useState();
   const [progressUploadImg, setProgressUploadImg] = useState(0);
 
-  const handleAddCategory = async (values) => {
+  const handleUpdateCategory = async (values) => {
     console.log(values);
-    const colRef = collection(db, "categories");
+    const colRef = doc(db, "categories", categoryId);
     try {
-      await addDoc(colRef, {
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        name: useCapitalizeString(values.name),
+      await updateDoc(colRef, {
+        name: values.name,
         status: Number(values.status),
         img: values.img,
         createdAt: serverTimestamp(),
       });
-      reset({
-        name: "",
-        status: 2,
-        img: "",
-      });
       setImage("");
       setProgressUploadImg(0);
       toast.success("Created category successfully");
+      navigate("/manage/category");
     } catch (e) {
       toast.error("Something went wrong");
       console.log(e);
@@ -71,16 +69,28 @@ const AddCategory = () => {
   };
 
   useEffect(() => {
+    async function fetchData() {
+      const colRef = doc(db, "categories", categoryId);
+      const singleDoc = await getDoc(colRef);
+      reset(singleDoc.data());
+      setImage(singleDoc.data()?.img);
+    }
+    fetchData();
+  }, [categoryId, image, reset, setValue]);
+
+  useEffect(() => {
     const errorMessage = Object.values(errors);
     toast.error(errorMessage[0]?.message);
   }, [errors]);
-
   return (
     <div>
       <div className="flex items-center justify-between">
-        <ManageTitle title="Add post" decs="Create a new post"></ManageTitle>
+        <ManageTitle
+          title="Update category"
+          decs="Update information of category"
+        ></ManageTitle>
       </div>
-      <form onSubmit={handleSubmit(handleAddCategory)}>
+      <form onSubmit={handleSubmit(handleUpdateCategory)}>
         <FormField2Row>
           <FormField>
             <Label htmlFor="name">Name</Label>
@@ -135,4 +145,4 @@ const AddCategory = () => {
   );
 };
 
-export default AddCategory;
+export default UpdateCategory;

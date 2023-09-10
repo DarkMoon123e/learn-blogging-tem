@@ -3,7 +3,7 @@ import React from "react";
 const ActionView = ({ onClick }) => {
   return (
     <div
-      className="flex items-center justify-center p-1 border rounded-lg border-slate-500"
+      className="flex items-center justify-center p-1 border rounded-lg cursor-pointer border-slate-500"
       onClick={onClick}
     >
       <svg

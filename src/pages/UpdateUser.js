@@ -1,20 +1,21 @@
-import FormField from "components/form/FormField";
-import Input from "components/form/Input";
-import Label from "components/form/Label";
-import ManageTitle from "modules/manage/ManageTitle";
 import React, { useEffect, useState } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import { db } from "../firebase/firebase-config";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import FormField2Row from "components/form/formField2Row";
+import FormField from "components/form/FormField";
+import Label from "components/form/Label";
 import ImageUpLoad from "components/form/ImageUpLoad";
 import Button from "components/Button";
-import RadioGroup from "components/form/RadioGroup";
+import Input from "components/form/Input";
 import Radio from "components/form/Radio";
 import { roleUser, statusUser } from "utils/constants";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { db } from "../firebase/firebase-config";
+import RadioGroup from "components/form/RadioGroup";
+import ManageTitle from "modules/manage/ManageTitle";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { doc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
 
 const schema = yup
   .object({
@@ -30,7 +31,10 @@ const schema = yup
   })
   .required();
 
-const AddUser = () => {
+const UpdateUser = () => {
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const userId = params.get("userId");
   const {
     control,
     handleSubmit,
@@ -54,11 +58,11 @@ const AddUser = () => {
   const [image, setImage] = useState();
   const [progressUploadImg, setProgressUploadImg] = useState(0);
 
-  const handleAddUser = async (values) => {
+  const handleUpdateUser = async (values) => {
     console.log(values);
-    const colRef = collection(db, "users");
+    const colRef = doc(db, "users", userId);
     try {
-      await addDoc(colRef, {
+      await updateDoc(colRef, {
         email: values.email,
         fullName: values.fullName,
         img: values.img,
@@ -78,11 +82,22 @@ const AddUser = () => {
       setImage("");
       setProgressUploadImg(0);
       toast.success("Created user successfully");
+      navigate("/manage/user");
     } catch (e) {
       toast.error("Something went wrong");
       console.log(e);
     }
   };
+
+  useEffect(() => {
+    async function fetchData() {
+      const colRef = doc(db, "users", userId);
+      const singleDoc = await getDoc(colRef);
+      reset(singleDoc.data());
+      setImage(singleDoc.data()?.img);
+    }
+    fetchData();
+  }, [image, reset, setValue, userId]);
 
   useEffect(() => {
     const errorMessage = Object.values(errors);
@@ -92,10 +107,13 @@ const AddUser = () => {
   return (
     <div>
       <div className="flex items-center justify-between">
-        <ManageTitle title="Add user" decs="Create a new user"></ManageTitle>
+        <ManageTitle
+          title="Update user"
+          decs="Update information of user"
+        ></ManageTitle>
       </div>
       <div className="mb-10"></div>
-      <form onSubmit={handleSubmit(handleAddUser)}>
+      <form onSubmit={handleSubmit(handleUpdateUser)}>
         <FormField2Row>
           <FormField>
             <Label htmlFor="email">Email address</Label>
@@ -200,7 +218,7 @@ const AddUser = () => {
         </FormField2Row>
         <div className="flex justify-center">
           <Button type="submit" loading={isSubmitting}>
-            Add user
+            Update user
           </Button>
         </div>
       </form>
@@ -208,4 +226,4 @@ const AddUser = () => {
   );
 };
 
-export default AddUser;
+export default UpdateUser;
